@@ -50,58 +50,82 @@ final_cleanup:
 
 }
 
+static inline int get_next_point( const char * jsonpath, int start ) {
+
+	char * cur_c;
+
+	for( cur_c = (char *)jsonpath + start; cur_c - jsonpath < JJP_MAX_JSONPATH_LENGTH; cur_c++ ) {
+		if( *cur_c == '.' || *cur_c == '\0' ) {
+			break;
+		}
+	}
+	check( cur_c - jsonpath < JJP_MAX_JSONPATH_LENGTH, final_cleanup );
+
+	return cur_c - jsonpath;
+
+final_cleanup:
+	return JJP_ERR_TO_LONG;
+
+}
+
 static void parse_recurse( const char * json, jsmntok_t * tok, unsigned int tok_count,
 		const char * jsonpath, jjp_result_wrapper_t * wrap, int parent, int start ) {
 
 	jjp_err_t rc;
-	char * cur_c;
 	int end;
 	unsigned int i;
-
+	char is_wildcard;
+	char recurse;
 
 
 	if( *( jsonpath + start - 1 ) == '\0' ) {
 		if( wrap->result->error == JJP_OK ) add_to_result( wrap, parent );
 	} else {
 
-		for( cur_c = (char *)jsonpath + start; cur_c - jsonpath < JJP_MAX_JSONPATH_LENGTH; cur_c++ ) {
-			if( *cur_c == '.' || *cur_c == '\0' ) {
-				end = cur_c - jsonpath;
-				break;
-			}
-		}
-		check( start < JJP_MAX_JSONPATH_LENGTH && ( rc = JJP_ERR_TO_LONG ), final_cleanup );
+		end = get_next_point( jsonpath, start );
+		check( ( rc = end ) >= 0, final_cleanup );
 
-		if( end - start == 0 && *( jsonpath + start ) == '.' ) {
-			// .. was written, recurse on next run
-			parse_recurse( json, tok, tok_count, jsonpath, wrap, -1, end + 1 );
+		if( end == start && *( jsonpath + start ) == '.' ) {
+			// .. was written, recurse into all children
+			// the jsonpath can't end with ..
+			check( *( jsonpath + end + 1 ) != '\0' && ( rc = JJP_ERR_UNSUPPORTED ), final_cleanup );
+			recurse = 1;
+			start = end + 1;
+			end = get_next_point( jsonpath, start );
+			check( ( rc = end ) >= 0, final_cleanup );
 		} else {
+			recurse = 0;
+		}
 
-			char is_wildcard;
+		is_wildcard = ( end - start == 1 && *( jsonpath + start ) == '*' );
 
-			is_wildcard = ( end - start == 1 && *( jsonpath + start ) == '*' );
-
-			for ( i = 1; i < tok_count; i++ ) {
-				if(
-						( parent == -1 || tok[i].parent == parent )
-						&& tok[i].type == JSMN_STRING
-						&& (
-							is_wildcard
-							|| (
-								end - start == tok[i].end - tok[i].start
-								&& strncmp( json + tok[i].start, jsonpath + start, tok[i].end - tok[i].start ) == 0
-							   )
+		for ( i = 1; i < tok_count; i++ ) {
+			if(
+					(
+					 tok[i].parent == parent
+					 || (
+						 recurse
+						 && tok[i].start > tok[parent].start
+						 && tok[i].end < tok[parent].end
+					    )
+					)
+					&& tok[i].type == JSMN_STRING
+					&& (
+						is_wildcard
+						|| (
+							end - start == tok[i].end - tok[i].start
+							&& strncmp( json + tok[i].start, jsonpath + start, tok[i].end - tok[i].start ) == 0
 						   )
+					   )
 
-				  ) {
-					check( i + 1 < tok_count && tok[i + 1].parent == (int)i && ( rc = JJP_ERR_WEIRD_JSON ), final_cleanup );
-					parse_recurse( json, tok, tok_count, jsonpath, wrap, i + 1, end + 1 );
-				}
+			  ) {
+				check( i + 1 < tok_count && tok[i + 1].parent == (int)i && ( rc = JJP_ERR_WEIRD_JSON ), final_cleanup );
+				parse_recurse( json, tok, tok_count, jsonpath, wrap, i + 1, end + 1 );
 			}
-
 		}
 
 	}
+
 
 	return;
 
