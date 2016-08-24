@@ -14,7 +14,7 @@ only be able to parse one jsonpath expression at a time, which can be slower ...
 2. `JJP_LOG` if defined enables logging of all jjp errors to stderr (look at dbg.h for more info). Primarly useful for developing
 and debugging jsmn-jsonpath.  
   
-TODO:  
+## TODO:  
 1. add json array support ( [] operator )  
 2. maybe add other operators( union, array slice, ... )  
 3. optimize performance by searching for similar path only once in one function call  
