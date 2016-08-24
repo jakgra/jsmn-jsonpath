@@ -20,5 +20,5 @@ and debugging jsmn-jsonpath.
 3. optimize performance by searching for similar path only once in one function call  
 
 ## Bugs
-I am sure there are many...
+I am sure there are many...  
 Please report them on github as new issues.
