@@ -1,6 +1,8 @@
 #include <jsmn.h>
 #include <dbg.h>
 #include <jsonpath.h>
+#include <errno.h>
+#include <stdlib.h>
 
 
 
@@ -46,15 +48,20 @@ int main( int argc, char * * argv ) {
 	int tok_count;
 	jjp_result_t result;
 	unsigned int i;
+	unsigned int cur_obj;
 
-	check( argc == 2, usage_cleanup );
+	check( argc == 3, usage_cleanup );
+
+	errno = 0;
+	cur_obj = strtol( argv[2], NULL, 10 );
+	check( errno == 0, usage_cleanup );
 
 	jsmn_init( &parser );
 
 	tok_count = jsmn_parse( &parser, json, strlen( json ), tok, MAX_TOKENS );
 	check( tok_count > 0, final_cleanup );
 
-	rc = jjp_jsonpath( json, tok, tok_count, argv[1],  &result, NULL );
+	rc = jjp_jsonpath( json, tok, tok_count, argv[1], cur_obj, &result );
 	check( rc == JJP_OK && result.error == JJP_OK, final_cleanup );
 
 	printf( "Matches count: %d\n", result.count );
@@ -63,9 +70,14 @@ int main( int argc, char * * argv ) {
 	for( i = 0; i < result.count; i++ ) {
 
 		jsmntok_t cur;
+		jsmntok_t key;
 
+		key = tok[ result.tokens[i] - 1 ];
 		cur = tok[ result.tokens[i] ];
-		printf( "%u. : %.*s\n", i + 1, cur.end - cur.start, json + cur.start );
+		printf( "%u. (token-%u) (key: %.*s): %.*s\n",
+				i + 1, result.tokens[i],
+				key.end - key.start, json + key.start,
+				cur.end - cur.start, json + cur.start );
 
 	}
 
@@ -77,7 +89,7 @@ final_cleanup:
 	return -1;
 
 usage_cleanup:
-	printf( "Usage: ./static-json \"$.store.book[1].author\"\n" );
+	printf( "Usage:\n./static-json \"$.store.book[1].author\" 0\n./static-json \"@..author\" 2\n" );
 	return -1;
 
 }

@@ -1,7 +1,4 @@
 #include "jsonpath.h"
-#ifndef JJP_NO_STDARG
-#include <stdarg.h>
-#endif
 #include "dbg.h"
 #include <stdlib.h>
 #include <string.h>
@@ -136,32 +133,6 @@ final_cleanup:
 	return;
 
 }
-static jjp_err_t parse_jsonpath( const char * json, jsmntok_t * tok, unsigned int tok_count, const char * jsonpath, jjp_result_t * result ) {
-
-	jjp_result_wrapper_t wrap;
-
-
-	check( tok_count > 0 && tok[0].type == JSMN_OBJECT, noobj_cleanup );
-
-	check( jsonpath && jsonpath[0] == '$' && jsonpath[1] == '.', unsupported_cleanup );
-
-	result->error = JJP_OK;
-	result->count = 0;
-	result->tokens = NULL;
-
-	wrap.result = result;
-	wrap.max_mem = 0;
-	parse_recurse( json, tok, tok_count, jsonpath, &wrap, 0, 2 );
-
-	return JJP_OK;
-
-unsupported_cleanup:
-	return JJP_ERR_UNSUPPORTED;
-
-noobj_cleanup:
-	return JJP_ERR_NOOBJ;
-
-}
 
 
 
@@ -173,35 +144,34 @@ jjp_err_t jjp_jsonpath(
 		jsmntok_t * tokens,
 		unsigned int tokens_count,
 		const char * jsonpath,
+		unsigned int current_object,
 		jjp_result_t * result
-#ifndef JJP_NO_STDARG
-		, ...
-#endif
 		) {
 
-#ifndef JJP_NO_STDARG
-	va_list argp;
-#endif
-	jjp_err_t rc;
-	const char * path;
+	jjp_result_wrapper_t wrap;
 
 
-	rc = parse_jsonpath( json, tokens, tokens_count, jsonpath, result );
-	check( rc == JJP_OK, final_cleanup );
+	check( jsonpath && ( jsonpath[0] == '$' || jsonpath[0] == '@' ) && jsonpath[1] == '.', unsupported_cleanup );
 
-#ifndef JJP_NO_STDARG
-	va_start( argp, result );
+	if( jsonpath[0] == '$' ) current_object = 0;
 
-	while( ( path = va_arg( argp, const char * ) ) ) {
-		rc = parse_jsonpath( json, tokens, tokens_count, path, va_arg( argp, jjp_result_t * ) );
-		check( rc == JJP_OK, final_cleanup );
-	}
-#endif
+	check( current_object < tokens_count && tokens[current_object].type == JSMN_OBJECT, noobj_cleanup );
+
+	result->error = JJP_OK;
+	result->count = 0;
+	result->tokens = NULL;
+
+	wrap.result = result;
+	wrap.max_mem = 0;
+	parse_recurse( json, tokens, tokens_count, jsonpath, &wrap, current_object, 2 );
 
 	return JJP_OK;
 
-final_cleanup:
-	return rc;
+unsupported_cleanup:
+	return JJP_ERR_UNSUPPORTED;
+
+noobj_cleanup:
+	return JJP_ERR_NOOBJ;
 
 }
 

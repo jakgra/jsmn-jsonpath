@@ -12,7 +12,7 @@
 typedef enum {
 	/* No error occured */
 	JJP_OK = 0,
-	/* First token is not an object (so invalid JSON) */
+	/* Current or first token is not an object */
 	JJP_ERR_NOOBJ = -2,
 	/* Unsupported JSONPath expression */
 	JJP_ERR_UNSUPPORTED = -3,
@@ -35,10 +35,8 @@ jjp_err_t jjp_jsonpath(
 		jsmntok_t * tokens,
 		unsigned int tokens_count,
 		const char * jsonpath,
+		unsigned int current_object,
 		jjp_result_t * result
-#ifndef JJP_NO_STDARG
-		, ...
-#endif
 		);
 
 jjp_err_t jjp_jsonpath_first(
@@ -46,10 +44,8 @@ jjp_err_t jjp_jsonpath_first(
 		jsmntok_t * tokens,
 		unsigned int tokens_count,
 		const char * jsonpath,
-		int * result
-#ifndef JJP_NO_STDARG
-		, ...
-#endif
+		unsigned int current_object,
+		unsigned int * result
 		);
 
 void jjp_result_deinit( jjp_result_t * result );

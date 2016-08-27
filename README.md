@@ -9,8 +9,7 @@ You can normally (if you use gcc or clang) achieve this by adding the `-DJSMN_PA
 
 ## Compile options
 You can control the behaviour of jsmn-jsonpath with a few compile options:  
-1. `JJP_NO_STDARG` if defined disables the use of stdarg.h ( `va_list, va_start, ...` ) in all functions. Note that you will then
-only be able to parse one jsonpath expression at a time, which can be slower ... .  
+1. `JJP_NO_MALLOC` if defined disables the use of malloc and free so there are no dependencies at all ( no stdlib.h ... ). Note that the api changes slightly.  
 2. `JJP_LOG` if defined enables logging of all jjp errors to stderr (look at dbg.h for more info). Primarly useful for developing
 and debugging jsmn-jsonpath.  
   
