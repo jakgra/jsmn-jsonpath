@@ -72,8 +72,9 @@ int main( int argc, char * * argv ) {
 		jsmntok_t cur;
 		jsmntok_t key;
 
-		key = tok[ result.tokens[i] - 1 ];
 		cur = tok[ result.tokens[i] ];
+		key = tok[ cur.parent ];
+		if( key.type == JSMN_ARRAY ) key = tok[ key.parent ];
 		printf( "%u. (token-%u) (key: %.*s): %.*s\n",
 				i + 1, result.tokens[i],
 				key.end - key.start, json + key.start,
@@ -89,7 +90,7 @@ final_cleanup:
 	return -1;
 
 usage_cleanup:
-	printf( "Usage:\n./static-json \"$.store.book[1].author\" 0\n./static-json \"@..author\" 2\n" );
+	printf( "Usage:\n./static-json \"$.store.book[1].author\" 0\n./static-json \"@.author\" 5\n" );
 	return -1;
 
 }

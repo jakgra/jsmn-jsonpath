@@ -1,7 +1,7 @@
 # Jsmn JSONpath
 A JSONPath (http://goessner.net/articles/JsonPath/) implementation for jsmn (https://github.com/zserge/jsmn).  
 
-## THIS IS STILL IN EARLY BETA
+## THIS IS STILL IN BETA
 
 ## Usage
 For an example look in the tests directory. For the implementation to work jsmn must be compiled with parent links.
@@ -14,9 +14,10 @@ You can control the behaviour of jsmn-jsonpath with a few compile options:
 and debugging jsmn-jsonpath.  
   
 ## TODO:  
-1. add json array support ( [] operator )  
-2. maybe add other operators( union, array slice, ... )  
-3. optimize performance by searching for similar path only once in one function call  
+- add support for wildcard in array operator ( `book[*]` )
+- add support for `JJP_NO_MALLOC`
+- maybe add other operators( union, array slice, ... )  
+
 
 ## Bugs
 I am sure there are many...  

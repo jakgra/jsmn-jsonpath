@@ -52,7 +52,7 @@ static inline int get_next_point( const char * jsonpath, int start ) {
 	char * cur_c;
 
 	for( cur_c = (char *)jsonpath + start; cur_c - jsonpath < JJP_MAX_JSONPATH_LENGTH; cur_c++ ) {
-		if( *cur_c == '.' || *cur_c == '\0' ) {
+		if( *cur_c == '.' || *cur_c == '[' || *cur_c == '\0' ) {
 			break;
 		}
 	}
@@ -62,6 +62,42 @@ static inline int get_next_point( const char * jsonpath, int start ) {
 
 final_cleanup:
 	return JJP_ERR_TO_LONG;
+
+}
+
+static int to_int( char * a, int * len ) {
+
+	const char * digits = "0123456789";
+	int i;
+	int j;
+	int found;
+	int result;
+	int is_negative;
+
+
+	is_negative = ( a[0] == '-' );
+
+	result = 0;
+	*len = 0;
+
+	for( j = is_negative; j < 12; j++ ) {
+		found = -1;
+		for( i = 0; digits[i] != '\0'; i++ ) {
+			if( a[j] == digits[i] ) {
+				found = i;
+				break;
+			}
+		}
+		if( found == -1 ) {
+			*len = j;
+			break;
+		} else {
+			result *= 10;
+			result += found;
+		}
+	}
+
+	return ( is_negative ? -1 : 1 ) * result;
 
 }
 
@@ -77,6 +113,45 @@ static void parse_recurse( const char * json, jsmntok_t * tok, unsigned int tok_
 
 	if( *( jsonpath + start - 1 ) == '\0' ) {
 		if( wrap->result->error == JJP_OK ) add_to_result( wrap, parent );
+	} else if( *( jsonpath + start - 1 ) == '[' ) {
+		int index;
+		int len;
+
+
+		if( tok[parent].type == JSMN_ARRAY ) {
+
+			index = to_int( (char *)jsonpath + start, &len );
+			check( len > 0 && *( jsonpath + start + len ) == ']'
+					&& (
+						*( jsonpath + start + len + 1 ) == '.'
+						|| *( jsonpath + start + len + 1 ) == '\0'
+					   )
+					&& ( rc = JJP_ERR_UNSUPPORTED ), final_cleanup );
+
+			end = start + len + 1;
+
+			if( index < 0 ) index = tok[parent].size + index;
+
+			for( i = parent; i < tok_count; i++ ) {
+
+				if( tok[i].end > tok[parent].end ) {
+					break;
+				}
+
+				if( tok[i].parent == parent ) {
+
+					index--;
+
+					if( index == -1 ) {
+						parse_recurse( json, tok, tok_count, jsonpath, wrap, i, end + 1 );
+					}
+
+				}
+
+			}
+
+		}
+
 	} else {
 
 		end = get_next_point( jsonpath, start );
@@ -96,7 +171,12 @@ static void parse_recurse( const char * json, jsmntok_t * tok, unsigned int tok_
 
 		is_wildcard = ( end - start == 1 && *( jsonpath + start ) == '*' );
 
-		for ( i = 1; i < tok_count; i++ ) {
+		for ( i = parent; i < tok_count; i++ ) {
+
+			if( tok[i].end > tok[parent].end ) {
+				break;
+			}
+
 			if(
 					(
 					 tok[i].parent == parent
