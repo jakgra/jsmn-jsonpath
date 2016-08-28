@@ -48,7 +48,7 @@ cd tests
 ./jjp_parse "$JSONPATH" "$CURRENT_ELEMENT"
 ```
   
-When the jsonpath begins with `$.` the current element is ignored and can be anything beetween `0` and `tokens\_count - 1`  
+When the jsonpath begins with `$.` the current element is ignored and can be anything beetween `0` and `tokens_count - 1`  
   
 |         JSONPATH | CURRENT\_ELEMENT |              RESULT DESCRIPTION |
 | ---------------- | ---------------- | ------------------------------- |
