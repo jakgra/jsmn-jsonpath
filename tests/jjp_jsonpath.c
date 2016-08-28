@@ -86,11 +86,10 @@ int main( int argc, char * * argv ) {
 
 	return 0;
 
-final_cleanup:
-	return -1;
-
 usage_cleanup:
-	printf( "Usage:\n./static-json \"$.store.book[1].author\" 0\n./static-json \"@.author\" 5\n" );
+	printf( "Usage:\n./jjp_jsonpath \"$.store.book[1].author\" 0\n./jjp_jsonpath \"@.author\" 5\n" );
+
+final_cleanup:
 	return -1;
 
 }

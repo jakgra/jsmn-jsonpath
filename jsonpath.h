@@ -45,7 +45,7 @@ jjp_err_t jjp_jsonpath_first(
 		unsigned int tokens_count,
 		const char * jsonpath,
 		unsigned int current_object,
-		unsigned int * result
+		int * result
 		);
 
 void jjp_result_deinit( jjp_result_t * result );
