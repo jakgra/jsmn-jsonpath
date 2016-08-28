@@ -1,12 +1,64 @@
 # Jsmn JSONpath
 A JSONPath (http://goessner.net/articles/JsonPath/) implementation for jsmn (https://github.com/zserge/jsmn).  
 
-## THIS IS STILL IN BETA
-
 ## Usage
 For an example look in the tests directory. For the implementation to work jsmn must be compiled with parent links.
 You can normally (if you use gcc or clang) achieve this by adding the `-DJSMN_PARENT_LINKS` option to the compile command.
 
+## The JSONPath implementation
+Here are some examples how the implementation parses some JSONPaths for the following json:
+```json
+{ "store": {
+	"book": [
+	{ "category": "reference",
+		"author": "Nigel Rees",
+		"title": "Sayings of the Century",
+		"price": 8.95
+	},
+	{ "category": "fiction",
+		"author": "Evelyn Waugh",
+		"title": "Sword of Honour",
+		"price": 12.99
+	},
+	{ "category": "fiction",
+		"author": "Herman Melville",
+		"title": "Moby Dick",
+		"isbn": "0-553-21311-3",
+		"price": 8.99
+	},
+	{ "category": "fiction",
+		"author": "J. R. R. Tolkien",
+		"title": "The Lord of the Rings",
+		"isbn": "0-395-19395-8",
+		"price": 22.99
+	}
+	],
+	"bicycle": {
+		"color": "red",
+		"price": 19.95
+	}
+	   }
+}
+```
+  
+You can try them like this:
+```bash
+cd test
+./build.sh
+./jjp_parse "$JSONPATH" "$CURRENT_ELEMENT"
+```
+  
+When the jsonpath begins with $. the current element is ignored and can be anything beetween 0 and tokens\_count - 1  
+  
+|         JSONPATH | CURRENT\_ELEMENT |              RESULT DESCRIPTION |
+| ---------------- | ---------------- | ------------------------------- |
+|       $.store.\* |                0 |       book and bicycle elements |
+| $.\*.book[-3].\* |                0 | all elements in the second book |
+|         @..price |                0 |              all price elements |
+|         @..price |               46 |        the price of the bicycle |
+|             @.\* |               46 |  color and price of the bicycle |
+|        $..author |                0 |             all author elements |
+  
 ## Compile options
 You can control the behaviour of jsmn-jsonpath with a few compile options:  
 1. `JJP_NO_MALLOC` if defined disables the use of malloc and free so there are no dependencies at all ( no stdlib.h ... ). Note that the api changes slightly.  
