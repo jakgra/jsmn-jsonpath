@@ -73,7 +73,9 @@ and debugging jsmn-jsonpath.
 - add support for filter expressions ( `$.store.book[?(@.price < 10)].title` )
 - maybe add other operators( union, array slice, ... )  
 
-
 ## Bugs
 I am sure there are many...  
 Please report them on github as new issues.
+
+## Contributing
+All contributions, questions, interest, usage, ... is warmly welcomed ... :)  
