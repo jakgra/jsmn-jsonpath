@@ -1,5 +1,6 @@
 # Jsmn JSONpath
 A JSONPath (http://goessner.net/articles/JsonPath/) implementation for jsmn (https://github.com/zserge/jsmn).  
+The library should be very portable as the only dependency is `malloc()` and `free()` from `stdlib.h`.  
 
 ## Usage
 For an example look in the tests directory. For the implementation to work jsmn must be compiled with parent links.
