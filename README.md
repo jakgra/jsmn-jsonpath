@@ -43,7 +43,7 @@ Here are some examples how the implementation parses some JSONPaths for the foll
   
 You can try them like this:
 ```bash
-cd test
+cd tests
 ./build.sh
 ./jjp_parse "$JSONPATH" "$CURRENT_ELEMENT"
 ```
