@@ -67,6 +67,7 @@ You can control the behaviour of jsmn-jsonpath with a few compile options:
 and debugging jsmn-jsonpath.  
   
 ## TODO:  
+- add automated tests ( also valgrind test for leaks )
 - add support for wildcard in array operator ( `book[*]` )
 - add support for `JJP_NO_MALLOC`
 - add support for filter expressions ( `$.store.book[?(@.price < 10)].title` )
