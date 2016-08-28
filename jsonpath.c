@@ -1,7 +1,6 @@
 #include "jsonpath.h"
 #include "dbg.h"
 #include <stdlib.h>
-#include <string.h>
 
 
 
@@ -13,6 +12,18 @@ typedef struct {
 	jjp_result_t * result;
 	unsigned int max_mem;
 } jjp_result_wrapper_t;
+
+static char strings_are_equal( const char * s1, const char * s2, int len ) {
+
+	int i;
+
+	for( i = 0; i < len; i++ ) {
+		if( s1[i] != s2[i] ) return 0;
+	}
+
+	return 1;
+
+}
 
 static void add_to_result( jjp_result_wrapper_t * wrap, int token ) {
 
@@ -202,7 +213,7 @@ static void parse_recurse( const char * json, jsmntok_t * tok, unsigned int tok_
 						is_wildcard
 						|| (
 							end - start == tok[i].end - tok[i].start
-							&& strncmp( json + tok[i].start, jsonpath + start, tok[i].end - tok[i].start ) == 0
+							&& strings_are_equal( json + tok[i].start, jsonpath + start, tok[i].end - tok[i].start )
 						   )
 					   )
 

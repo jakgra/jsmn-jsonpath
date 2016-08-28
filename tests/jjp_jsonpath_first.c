@@ -76,7 +76,7 @@ int main( int argc, char * * argv ) {
 				cur.end - cur.start, json + cur.start );
 
 	} else {
-		printf( "Match not found." );
+		printf( "Match not found.\n" );
 	}
 
 	return 0;
