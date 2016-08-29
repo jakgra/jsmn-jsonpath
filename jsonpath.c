@@ -245,8 +245,8 @@ static void parse_recurse( const char * json, jsmntok_t * tok, unsigned int tok_
 	return;
 
 final_cleanup:
+	wrap->error = rc;
 	if( wrap->result ) {
-		wrap->error = rc;
 		free( wrap->result->tokens );
 		wrap->result->count = 0;
 	}
@@ -283,6 +283,7 @@ jjp_result_t * jjp_jsonpath(
 
 	check( current_object < tokens_count && tokens[current_object].type == JSMN_OBJECT, result_cleanup );
 
+	wrap.error = JJP_OK;
 	wrap.only_first = -2;
 	wrap.result = result;
 	wrap.max_mem = 0;
@@ -311,25 +312,24 @@ int jjp_jsonpath_first(
 	jjp_result_wrapper_t wrap;
 
 
-	check( jsonpath && ( jsonpath[0] == '$' || jsonpath[0] == '@' ) && jsonpath[1] == '.', unsupported_cleanup );
+	check( jsonpath && ( jsonpath[0] == '$' || jsonpath[0] == '@' ) && jsonpath[1] == '.', final_cleanup );
 
 	if( jsonpath[0] == '$' ) current_object = 0;
 
-	check( current_object < tokens_count && tokens[current_object].type == JSMN_OBJECT, noobj_cleanup );
+	check( current_object < tokens_count && tokens[current_object].type == JSMN_OBJECT, final_cleanup );
 
+	wrap.error = JJP_OK;
 	wrap.only_first = -1;
 	wrap.result = NULL;
 	wrap.max_mem = 0;
 
 	parse_recurse( json, tokens, tokens_count, jsonpath, &wrap, current_object, 2 );
+	check( wrap.error == JJP_OK, final_cleanup );
 
 	return wrap.only_first;
 
-unsupported_cleanup:
-	return JJP_ERR_UNSUPPORTED;
-
-noobj_cleanup:
-	return JJP_ERR_NOOBJ;
+final_cleanup:
+	return -2;
 
 }
 

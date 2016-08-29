@@ -18,15 +18,15 @@ typedef struct {
 } jjp_result_t;
 
 /**
- * \Return NULL on error or a pointer to a jjp_result_t that was allocated on the stack using malloc.
+ * \Returns a pointer to a jjp_result_t that was allocated on the stack using malloc or NULL on error.
  * You must free the memory used by the returned object after using it, by calling jjp_result_destroy().
  */
 jjp_result_t * jjp_jsonpath(
-		const char * json,
-		jsmntok_t * tokens,
-		unsigned int tokens_count,
-		const char * jsonpath,
-		unsigned int current_object
+		const char * json, /**< The js parameter from jsmn_parse() */
+		jsmntok_t * tokens, /**< The tokens parameter from jsmn_parse() */
+		unsigned int tokens_count, /**< The return value from jsmn_parse() */
+		const char * jsonpath, /**< The JSONPath you want to find matches for */
+		unsigned int current_object /**< The index of the current element inside the tokens array */
 		);
 
 /**
@@ -35,14 +35,14 @@ jjp_result_t * jjp_jsonpath(
 void jjp_result_destroy( jjp_result_t * result );
 
 /**
- * \Returns -1 on error or the index of the first token that matches the jsonpath.
+ * \Returns the index of the first token that matches the jsonpath or -1 if no matches were found or -2 on error.
  */
 int jjp_jsonpath_first(
-		const char * json,
-		jsmntok_t * tokens,
-		unsigned int tokens_count,
-		const char * jsonpath,
-		unsigned int current_object
+		const char * json, /**< see jjp_jsonpath() */
+		jsmntok_t * tokens, /**< see jjp_jsonpath() */
+		unsigned int tokens_count, /**< see jjp_jsonpath() */
+		const char * jsonpath, /**< see jjp_jsonpath() */
+		unsigned int current_object /**< see jjp_jsonpath() */
 		);
 
 #endif
