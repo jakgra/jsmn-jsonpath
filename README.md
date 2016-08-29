@@ -11,7 +11,10 @@ It is very simple:
 #include <stdio.h>
 #include <string.h>
 
-const char * json = "{\"pills\": [ { \"color\": \"blue\", \"action\": \"sleep\" }, { \"color\": \"red\", \"action\": \"die\" } ] }";
+const char * json = "{\"pills\": [ \
+{ \"color\": \"blue\", \"action\": \"sleep\" }, \
+{ \"color\": \"red\", \"action\": \"die\" } \
+        ] }";
 
 int main() {
         int tok_count;
