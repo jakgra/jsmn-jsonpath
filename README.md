@@ -34,7 +34,7 @@ int main() {
         return 0;
 }
 ```
-If you want more than one result than just use this function:
+If you want more than one result then just use this function:
 ```c
 ...
 jjp_result_t * r = jjp_jsonpath( json, tok, tok_count, "$.pills[-1].*", 0 );
