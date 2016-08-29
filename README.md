@@ -34,6 +34,45 @@ int main() {
         return 0;
 }
 ```
+If you want more than one result than just use this function:
+```c
+...
+jjp_result_t * r = jjp_jsonpath( json, tok, tok_count, "$.pills[-1].*", 0 );
+if( r ) {
+	for( unsigned int i = 0; i < r->count; i++ ) printf( "Value for key \"%.*s\" is: \"%.*s\"\n",
+			tok[ tok[ r->tokens[i] ].parent ].end - tok[ tok[ r->tokens[i] ].parent ].start,
+			json + tok[ tok[ r->tokens[i] ].parent ].start,
+			tok[ r->tokens[i] ].end - tok[ r->tokens[i] ].start,
+			json + tok[ r->tokens[i] ].start );
+	jjp_result_destroy( r );
+}
+```
+If you hate dynamic memory allocation :) use this instead:
+```c
+...
+int rs[7];
+int count;
+jjp_jsonpath_save( json, tok, tok_count, "$.pills[-1].*", 0, rs, 7, &count );
+for( int i = 0; i < count; i++ ) printf( "Value for key \"%.*s\" is: \"%.*s\"\n",
+		tok[ tok[ rs[i] ].parent ].end - tok[ tok[ rs[i] ].parent ].start,
+		json + tok[ tok[ rs[i] ].parent ].start,
+		tok[ rs[i] ].end - tok[ rs[i] ].start,
+		json + tok[ rs[i] ].start );
+```
+This four ( `jjp_jsonpath_first()`, `jjp_jsonpath()`, `jjp_result_destroy()` and `jjp_jsonpath_save()` ) are all the functions the library has.  
+You should also note that to increase performance you should save results from similar JSONPaths and use them as current elements.  
+You can do this in the first example ( tests/simple.c ) if you rewrite it as:
+```c
+...
+int p = jjp_jsonpath_first( json, tok, tok_count, "$.pills[0]", 0 );
+
+c = jjp_jsonpath_first( json, tok, tok_count, "@.color", p );
+printf( "If you take the %.*s pill,",  tok[c].end - tok[c].start, json + tok[c].start );
+
+c = jjp_jsonpath_first( json, tok, tok_count, "@.action", p );
+printf( " you may as well just %.*s your life away.\n",  tok[c].end - tok[c].start, json + tok[c].start );
+...
+```
 Also have a look at jsonpath.h as it is heavily commented.
 For simple full examples look in the tests directory. For the implementation to work jsmn must be compiled with parent links.
 You can normally (if you use gcc or clang) achieve this by adding the `-DJSMN_PARENT_LINKS` option to the compile command.
