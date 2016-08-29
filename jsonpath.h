@@ -45,4 +45,23 @@ int jjp_jsonpath_first(
 		unsigned int current_object /**< see jjp_jsonpath() */
 		);
 
+/**
+ * An alternative to jjp_jsonpath() ( same functionality ) that doesn't perform memory allocations.
+ * That means that you have to provide the array where the results get stored.
+ */
+void jjp_jsonpath_save(
+		const char * json, /**< see jjp_jsonpath() */
+		jsmntok_t * tokens, /**< see jjp_jsonpath() */
+		unsigned int tokens_count, /**< see jjp_jsonpath() */
+		const char * jsonpath, /**< see jjp_jsonpath() */
+		unsigned int current_object, /**< see jjp_jsonpath() */
+		int * results, /**< A pointer to an int[] that is at least num_results big */
+		unsigned int num_results, /**< The max returned results */
+		int * results_count /**< A pointer to an int where the count of found matches will be saved
+				      or -2 on error ( wrong json, wrong jsonpath, ... )
+				      or -3 if the results array was to small for all the results
+				      ( the results still get saved and you can loop trough them
+				      using num_results instead of results_count ) */
+		);
+
 #endif

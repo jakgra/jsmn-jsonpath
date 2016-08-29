@@ -27,6 +27,8 @@ typedef struct {
 	int only_first;
 	jjp_result_t * result;
 	unsigned int max_mem;
+	unsigned int count;
+	int * provided_store;
 } jjp_result_wrapper_t;
 
 static char strings_are_equal( const char * s1, const char * s2, int len ) {
@@ -67,7 +69,18 @@ static void add_to_result( jjp_result_wrapper_t * wrap, int token ) {
 		wrap->result->tokens[ wrap->result->count - 1 ] = token;
 
 	} else if( wrap->only_first == -1 ) {
+
 		wrap->only_first = token;
+
+	} else if( wrap->only_first == -3 ) {
+
+		wrap->count++;
+		if( wrap->count <= wrap->max_mem ) {
+			wrap->provided_store[ wrap->count - 1 ] = token;
+		} else {
+			wrap->error = JJP_ERR_OUT_OF_MEMORY;
+		}
+
 	}
 
 	return;
@@ -148,7 +161,7 @@ static void parse_recurse( const char * json, jsmntok_t * tok, unsigned int tok_
 
 
 	if( *( jsonpath + start - 1 ) == '\0' ) {
-		if( ( wrap->only_first == -2 && wrap->error == JJP_OK ) || wrap->only_first == -1 ) {
+		if( wrap->error == JJP_OK && wrap->only_first < 0 ) {
 			add_to_result( wrap, parent );
 		}
 	} else if( *( jsonpath + start - 1 ) == '[' ) {
@@ -301,6 +314,13 @@ final_cleanup:
 
 }
 
+void jjp_result_destroy( jjp_result_t * result ) {
+	if( result ) {
+		free( result->tokens );
+		free( result );
+	}
+}
+
 int jjp_jsonpath_first(
 		const char * json,
 		jsmntok_t * tokens,
@@ -333,11 +353,50 @@ final_cleanup:
 
 }
 
-void jjp_result_destroy( jjp_result_t * result ) {
-	if( result ) {
-		free( result->tokens );
-		free( result );
-	}
-}
+void jjp_jsonpath_save(
+		const char * json,
+		jsmntok_t * tokens,
+		unsigned int tokens_count,
+		const char * jsonpath,
+		unsigned int current_object,
+		int * results,
+		unsigned int num_results,
+		int * results_count
+		) {
 
+	jjp_result_wrapper_t wrap;
+
+
+	check( jsonpath && ( jsonpath[0] == '$' || jsonpath[0] == '@' ) && jsonpath[1] == '.', final_cleanup );
+
+	if( jsonpath[0] == '$' ) current_object = 0;
+
+	check( current_object < tokens_count && tokens[current_object].type == JSMN_OBJECT, final_cleanup );
+
+	wrap.error = JJP_OK;
+	wrap.only_first = -3;
+	wrap.count = 0;
+	wrap.result = NULL;
+	wrap.max_mem = num_results;
+	wrap.provided_store = results;
+
+	parse_recurse( json, tokens, tokens_count, jsonpath, &wrap, current_object, 2 );
+
+	if( wrap.error == JJP_ERR_OUT_OF_MEMORY ) {
+		*results_count = -3;
+		wrap.error = JJP_OK;
+	} else {
+		*results_count = wrap.count;
+	}
+
+	check( wrap.error == JJP_OK, final_cleanup );
+
+	return;
+
+final_cleanup:
+	*results_count = -2;
+	return;
+
+
+}
 
