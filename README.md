@@ -1,9 +1,38 @@
 # Jsmn JSONpath
 A JSONPath (http://goessner.net/articles/JsonPath/) implementation for jsmn (https://github.com/zserge/jsmn).  
-The library should be very portable as the only dependency is `malloc()` and `free()` from `stdlib.h`.  
+The library should be very portable as there are no dependencies if compiled with `JJP_NO_MALLOC`, not even libc
+and otherwise the only dependency is `malloc()` and `free()` from `stdlib.h`.  
 
 ## Usage
-For an example look in the tests directory. For the implementation to work jsmn must be compiled with parent links.
+It is very simple:
+```c
+#include "../jsonpath.h"
+#include "jsmn/jsmn.h"
+#include <stdio.h>
+#include <string.h>
+
+const char * json = "{\"pills\": [ { \"color\": \"blue\", \"action\": \"sleep\" }, { \"color\": \"red\", \"action\": \"die\" } ] }";
+
+int main() {
+        int tok_count;
+        jsmntok_t tok[100];
+        jsmn_parser parser;
+        int c;
+
+        jsmn_init( &parser );
+        tok_count = jsmn_parse( &parser, json, strlen( json ), tok, 100 );
+
+        c = jjp_jsonpath_first( json, tok, tok_count, "$.pills[0].color", 0 );
+        printf( "If you take the %.*s pill,",  tok[c].end - tok[c].start, json + tok[c].start );
+
+        c = jjp_jsonpath_first( json, tok, tok_count, "$.pills[0].action", 0 );
+        printf( " you may as well just %.*s your life away.\n",  tok[c].end - tok[c].start, json + tok[c].start );
+
+        return 0;
+}
+```
+Also have a look at jsonpath.h as it is heavily commented.
+For simple full examples look in the tests directory. For the implementation to work jsmn must be compiled with parent links.
 You can normally (if you use gcc or clang) achieve this by adding the `-DJSMN_PARENT_LINKS` option to the compile command.
 
 ## The JSONPath implementation
@@ -62,14 +91,13 @@ When the jsonpath begins with `$.` the current element is ignored and can be any
   
 ## Compile options
 You can control the behaviour of jsmn-jsonpath with a few compile options:  
-1. `JJP_NO_MALLOC` if defined disables the use of malloc and free so there are no dependencies at all ( no stdlib.h ... ). Note that the api changes slightly.  
+1. `JJP_NO_MALLOC` if defined disables the use of malloc and free so there are no dependencies and no memory allocations at all ( no `stdlib.h` ... ). Note that the `jjp_jsonpath()` function becomes unavailable in this case and you have to use the `jjp_jsonpath_save()` function instead.  
 2. `JJP_LOG` if defined enables logging of all jjp errors to stderr (look at dbg.h for more info). Primarly useful for developing
 and debugging jsmn-jsonpath.  
   
 ## TODO:  
 - add automated tests ( also valgrind test for leaks )
 - add support for wildcard in array operator ( `book[*]` )
-- add support for `JJP_NO_MALLOC`
 - add support for filter expressions ( `$.store.book[?(@.price < 10)].title` )
 - maybe add other operators( union, array slice, ... )  
 
