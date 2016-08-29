@@ -1,6 +1,8 @@
 #include "jsonpath.h"
 #include "dbg.h"
+#ifndef JJP_NO_MALLOC
 #include <stdlib.h>
+#endif
 
 
 
@@ -25,7 +27,9 @@ typedef enum {
 typedef struct {
 	jjp_err_t error;
 	int only_first;
+#ifndef JJP_NO_MALLOC
 	jjp_result_t * result;
+#endif
 	unsigned int max_mem;
 	unsigned int count;
 	int * provided_store;
@@ -45,10 +49,27 @@ static char strings_are_equal( const char * s1, const char * s2, int len ) {
 
 static void add_to_result( jjp_result_wrapper_t * wrap, int token ) {
 
+#ifndef JJP_NO_MALLOC
 	unsigned int * tmp;
+#endif
 
 
-	if( wrap->only_first == -2 ) {
+	if( wrap->only_first == -1 ) {
+
+		wrap->only_first = token;
+
+	} else if( wrap->only_first == -3 ) {
+
+		wrap->count++;
+		if( wrap->count <= wrap->max_mem ) {
+			wrap->provided_store[ wrap->count - 1 ] = token;
+		} else {
+			wrap->error = JJP_ERR_OUT_OF_MEMORY;
+		}
+
+	}
+#ifndef JJP_NO_MALLOC
+	else if( wrap->only_first == -2 ) {
 
 		wrap->result->count++;
 
@@ -68,23 +89,12 @@ static void add_to_result( jjp_result_wrapper_t * wrap, int token ) {
 
 		wrap->result->tokens[ wrap->result->count - 1 ] = token;
 
-	} else if( wrap->only_first == -1 ) {
-
-		wrap->only_first = token;
-
-	} else if( wrap->only_first == -3 ) {
-
-		wrap->count++;
-		if( wrap->count <= wrap->max_mem ) {
-			wrap->provided_store[ wrap->count - 1 ] = token;
-		} else {
-			wrap->error = JJP_ERR_OUT_OF_MEMORY;
-		}
-
 	}
+#endif
 
 	return;
 
+#ifndef JJP_NO_MALLOC
 final_cleanup:
 	if( wrap->result ) {
 		free( wrap->result->tokens );
@@ -93,6 +103,7 @@ final_cleanup:
 		wrap->error = JJP_ERR_OUT_OF_MEMORY;
 	}
 	return;
+#endif
 
 }
 
@@ -259,10 +270,12 @@ static void parse_recurse( const char * json, jsmntok_t * tok, unsigned int tok_
 
 final_cleanup:
 	wrap->error = rc;
+#ifndef JJP_NO_MALLOC
 	if( wrap->result ) {
 		free( wrap->result->tokens );
 		wrap->result->count = 0;
 	}
+#endif
 	return;
 
 }
@@ -272,6 +285,7 @@ final_cleanup:
 
 // public functions
 
+#ifndef JJP_NO_MALLOC
 jjp_result_t * jjp_jsonpath(
 		const char * json,
 		jsmntok_t * tokens,
@@ -320,6 +334,7 @@ void jjp_result_destroy( jjp_result_t * result ) {
 		free( result );
 	}
 }
+#endif
 
 int jjp_jsonpath_first(
 		const char * json,
@@ -340,8 +355,6 @@ int jjp_jsonpath_first(
 
 	wrap.error = JJP_OK;
 	wrap.only_first = -1;
-	wrap.result = NULL;
-	wrap.max_mem = 0;
 
 	parse_recurse( json, tokens, tokens_count, jsonpath, &wrap, current_object, 2 );
 	check( wrap.error == JJP_OK, final_cleanup );
@@ -376,7 +389,6 @@ void jjp_jsonpath_save(
 	wrap.error = JJP_OK;
 	wrap.only_first = -3;
 	wrap.count = 0;
-	wrap.result = NULL;
 	wrap.max_mem = num_results;
 	wrap.provided_store = results;
 

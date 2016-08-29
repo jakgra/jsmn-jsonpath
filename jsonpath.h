@@ -9,6 +9,7 @@
 #define JJP_DEFAULT_ALLOCATED_RESULT_TOKENS 16
 #define JJP_MAX_JSONPATH_LENGTH 10000
 
+#ifndef JJP_NO_MALLOC
 /**
  * jsmn-jsonpath result type.
  */
@@ -33,6 +34,7 @@ jjp_result_t * jjp_jsonpath(
  * Frees the memory used by result
  */
 void jjp_result_destroy( jjp_result_t * result );
+#endif
 
 /**
  * \Returns the index of the first token that matches the jsonpath or -1 if no matches were found or -2 on error.
