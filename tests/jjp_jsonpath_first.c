@@ -41,7 +41,6 @@ const char * json = "{ \"store\": { \
 
 int main( int argc, char * * argv ) {
 
-	jjp_err_t rc;
 	jsmn_parser parser;
 #define MAX_TOKENS 100
 	jsmntok_t tok[MAX_TOKENS];
@@ -62,9 +61,7 @@ int main( int argc, char * * argv ) {
 	tok_count = jsmn_parse( &parser, json, strlen( json ), tok, MAX_TOKENS );
 	check( tok_count > 0, final_cleanup );
 
-	rc = jjp_jsonpath_first( json, tok, tok_count, argv[1], cur_obj, &i );
-	check( rc == JJP_OK, final_cleanup );
-
+	i = jjp_jsonpath_first( json, tok, tok_count, argv[1], cur_obj );
 
 	if( i >= 0 ) {
 		cur = tok[ i ];

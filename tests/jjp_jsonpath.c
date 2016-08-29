@@ -41,12 +41,11 @@ const char * json = "{ \"store\": { \
 
 int main( int argc, char * * argv ) {
 
-	jjp_err_t rc;
 	jsmn_parser parser;
 #define MAX_TOKENS 100
 	jsmntok_t tok[MAX_TOKENS];
 	int tok_count;
-	jjp_result_t result;
+	jjp_result_t * result;
 	unsigned int i;
 	unsigned int cur_obj;
 
@@ -61,28 +60,28 @@ int main( int argc, char * * argv ) {
 	tok_count = jsmn_parse( &parser, json, strlen( json ), tok, MAX_TOKENS );
 	check( tok_count > 0, final_cleanup );
 
-	rc = jjp_jsonpath( json, tok, tok_count, argv[1], cur_obj, &result );
-	check( rc == JJP_OK && result.error == JJP_OK, final_cleanup );
+	result = jjp_jsonpath( json, tok, tok_count, argv[1], cur_obj );
+	check( result, final_cleanup );
 
-	printf( "Matches count: %d\n", result.count );
+	printf( "Matches count: %d\n", result->count );
 	printf( "Matches:\n");
 
-	for( i = 0; i < result.count; i++ ) {
+	for( i = 0; i < result->count; i++ ) {
 
 		jsmntok_t cur;
 		jsmntok_t key;
 
-		cur = tok[ result.tokens[i] ];
+		cur = tok[ result->tokens[i] ];
 		key = tok[ cur.parent ];
 		if( key.type == JSMN_ARRAY ) key = tok[ key.parent ];
 		printf( "%u. (token-%u) (key: %.*s): %.*s\n",
-				i + 1, result.tokens[i],
+				i + 1, result->tokens[i],
 				key.end - key.start, json + key.start,
 				cur.end - cur.start, json + cur.start );
 
 	}
 
-	jjp_result_deinit( &result );
+	jjp_result_destroy( result );
 
 	return 0;
 
