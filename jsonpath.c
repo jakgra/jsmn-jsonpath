@@ -1,5 +1,4 @@
 #include "jsonpath.h"
-#include "dbg.h"
 #ifndef JJP_NO_MALLOC
 #include <stdlib.h>
 #endif

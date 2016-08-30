@@ -1,5 +1,4 @@
 #include <jsmn.h>
-#include <dbg.h>
 #include <jsonpath.h>
 #include <errno.h>
 #include <stdlib.h>
