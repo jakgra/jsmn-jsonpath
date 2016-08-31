@@ -130,6 +130,7 @@ When the jsonpath begins with `$.` the current element is ignored and can be any
 |         @..price |               46 |        the price of the bicycle |
 |             @.\* |               46 |  color and price of the bicycle |
 |        $..author |                0 |             all author elements |
+| $.store.book[\*] |                0 |        all books in book arrray |
   
 ## Compile options
 You can control the behaviour of jsmn-jsonpath with a few compile options:  
@@ -139,7 +140,6 @@ and debugging jsmn-jsonpath.
   
 ## TODO:  
 - add automated tests ( also valgrind test for leaks )
-- add support for wildcard in array operator ( `book[*]` )
 - add support for filter expressions ( `$.store.book[?(@.price < 10)].title` )
 - maybe add other operators( union, array slice, ... )  
 

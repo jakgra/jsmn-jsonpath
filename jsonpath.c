@@ -175,13 +175,20 @@ static void parse_recurse( const char * json, jsmntok_t * tok, unsigned int tok_
 			add_to_result( wrap, parent );
 		}
 	} else if( *( jsonpath + start - 1 ) == '[' ) {
-		int index;
-		int len;
-
 
 		if( tok[parent].type == JSMN_ARRAY ) {
 
-			index = to_int( (char *)jsonpath + start, &len );
+			int index;
+			int len;
+			char arr_wildcard;
+
+
+			arr_wildcard = ( *( jsonpath + start ) == '*' );
+			if( arr_wildcard ) {
+				len = 1;
+			} else {
+				index = to_int( (char *)jsonpath + start, &len );
+			}
 			check( len > 0 && *( jsonpath + start + len ) == ']'
 					&& (
 						*( jsonpath + start + len + 1 ) == '.'
@@ -191,7 +198,7 @@ static void parse_recurse( const char * json, jsmntok_t * tok, unsigned int tok_
 
 			end = start + len + 1;
 
-			if( index < 0 ) index = tok[parent].size + index;
+			if( ( ! arr_wildcard ) && index < 0 ) index = tok[parent].size + index;
 
 			for( i = parent; i < tok_count; i++ ) {
 
@@ -201,9 +208,9 @@ static void parse_recurse( const char * json, jsmntok_t * tok, unsigned int tok_
 
 				if( tok[i].parent == parent ) {
 
-					index--;
+					if( ! arr_wildcard ) index--;
 
-					if( index == -1 ) {
+					if( arr_wildcard || index == -1 ) {
 						parse_recurse( json, tok, tok_count, jsonpath, wrap, i, end + 1 );
 					}
 
