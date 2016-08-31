@@ -73,6 +73,7 @@ void jjp_jsonpath_save(
  * error handling, logging and debugging utilities not useful for the end developer
  */
 
+#ifndef check
 #ifdef JJP_LOG
 
 #include <stdio.h>
@@ -89,6 +90,7 @@ void jjp_jsonpath_save(
 
 #define check(A, B) if(!(A)) { goto B; }
 
+#endif
 #endif
 
 
