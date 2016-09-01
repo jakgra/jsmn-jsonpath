@@ -1,6 +1,8 @@
 #ifndef jjp_jjp_wrap_h
 #define jjp_jjp_wrap_h
 
+#include <jsonpath.h>
+
 
 
 

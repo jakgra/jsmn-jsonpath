@@ -1,4 +1,5 @@
 #include <jjp_wrap.h>
+#include <jsonpath.h>
 #include <stdlib.h>
 
 
