@@ -14,4 +14,5 @@ cc -g -Wall -Wextra -pedantic -std=c99 -DJSMN_PARENT_LINKS -DJJP_NO_MALLOC -DJJP
 	-I.. jsmn/jsmn.c ../jsonpath.c simple3.c -o simple3
 cc -g -Wall -Wextra -pedantic -std=c99 -DJSMN_PARENT_LINKS -DJJP_NO_MALLOC -DJJP_LOG -Ijsmn \
 	-I.. jsmn/jsmn.c ../jsonpath.c simple4.c -o simple4
-
+cc -g -Wall -Wextra -pedantic -std=c99 -DJSMN_PARENT_LINKS -DJJP_LOG -Ijsmn \
+	-I.. jsmn/jsmn.c ../jsonpath.c jjp_jsonpath_file.c -o jjp_jsonpath_file

@@ -83,6 +83,7 @@ static void add_to_result( jjp_result_wrapper_t * wrap, int token ) {
 			check( tmp, final_cleanup );
 
 			wrap->result->tokens = tmp;
+			wrap->max_mem *= 2;
 
 		}
 
