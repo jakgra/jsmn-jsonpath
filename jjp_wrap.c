@@ -98,3 +98,31 @@ final_cleanup:
 
 }
 
+int jjp_boolean( const char * json, jsmntok_t * tokens, unsigned int tokens_count, const char * jsonpath, unsigned int current_object, int * success ) {
+
+        int r;
+        int i;
+        char res;
+
+
+        i = jjp_jsonpath_first( json, tokens, tokens_count, jsonpath, current_object );
+        check( i >= 0 && tokens[i].type == JSMN_PRIMITIVE, final_cleanup );
+
+        res = *(json + tokens[i].start);
+        if( res == 't' ) {
+          r = 1;
+        } else {
+          check( res == 'f', final_cleanup);
+          r = 0;
+        }
+
+        if( success ) *success = 0;
+
+        return r;
+
+final_cleanup:
+        if( success ) *success = -1;
+        return 0;
+
+}
+
